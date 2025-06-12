@@ -1,8 +1,8 @@
 streamlit
-sqlalchemy
 pandas
 plotly
+sqlalchemy
 mysql-connector-python
 boto3
-streamlit-autorefresh
 streamlit-lottie
+streamlit-autorefresh
