@@ -8,6 +8,7 @@ from typing import List, Dict, Optional, Any
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import streamlit as st
 
 # ---------- CONFIGURATION ----------
 DB_USER = 'root'
@@ -166,6 +167,82 @@ def delete_product(product_id: int) -> None:
     except Exception as e:
         log(f"❌ Failed to delete product: {e}", "error")
 
+def insert_or_update_product(product_id: int = None, name: str = None, category: str = None, supplier: str = None, price: float = None, reorder_level: int = None, quantity: int = None):
+    """
+    Insert or update a product and its inventory in a normalized schema.
+    If product_id is provided, update; otherwise, insert new.
+    """
+    try:
+        with engine.begin() as conn:
+            # 1. Insert or update product info
+            if product_id:
+                # Update existing product
+                conn.execute(
+                    text(f"""
+                        UPDATE {PRODUCTS_TABLE}
+                        SET product_name = :name,
+                            category = :category,
+                            supplier_name = :supplier,
+                            unit_price = :price,
+                            reorder_level = :reorder_level
+                        WHERE product_id = :product_id
+                    """),
+                    {
+                        "product_id": product_id,
+                        "name": name,
+                        "category": category,
+                        "supplier": supplier,
+                        "price": price,
+                        "reorder_level": reorder_level
+                    }
+                )
+            else:
+                # Insert new product
+                result = conn.execute(
+                    text(f"""
+                        INSERT INTO {PRODUCTS_TABLE} (product_name, category, supplier_name, unit_price, reorder_level)
+                        VALUES (:name, :category, :supplier, :price, :reorder_level)
+                    """),
+                    {
+                        "name": name,
+                        "category": category,
+                        "supplier": supplier,
+                        "price": price,
+                        "reorder_level": reorder_level
+                    }
+                )
+                product_id = result.lastrowid  # Get the new product_id
+
+            # 2. Insert or update inventory for this product
+            conn.execute(
+                text(f"""
+                    INSERT INTO {INVENTORY_TABLE} (product_id, quantity_in_stock)
+                    VALUES (:product_id, :quantity)
+                    ON DUPLICATE KEY UPDATE quantity_in_stock = :quantity
+                """),
+                {
+                    "product_id": product_id,
+                    "quantity": quantity
+                }
+            )
+        log(f"✅ Product '{name}' (ID: {product_id}) inserted/updated successfully.")
+    except Exception as e:
+        log(f"❌ Failed to insert/update product: {e}", "error")
+
+def get_product_by_id(prod_id):
+    """
+    Retrieve a product from the inventory table by its ProductID.
+    """
+    query = """
+        SELECT p.product_id, p.product_name, p.category, p.supplier_name, p.unit_price, p.reorder_level, i.quantity_in_stock
+        FROM products p
+        JOIN inventory i ON p.product_id = i.product_id
+        WHERE p.product_id = :prod_id
+    """
+    with engine.begin() as conn:
+        result = conn.execute(text(query), {"prod_id": prod_id})
+        return pd.DataFrame(result.fetchall(), columns=result.keys())
+
 # ---------- EMAIL ----------
 def send_email_alert(product_name: str, stock: int, threshold: int) -> None:
     """Send a restock alert email using Gmail SMTP."""
@@ -307,6 +384,37 @@ def get_alert_data() -> pd.DataFrame:
         ORDER BY ra.sent_at DESC
     """
     return pd.read_sql(query, engine)
+
+# ---------- STREAMLIT UI ----------
+def admin_panel():
+    st.header("📝 Add or Update Product")
+
+    with st.form("product_form"):
+        product_id = st.number_input("Product ID (leave blank to insert new)", min_value=1, step=1, format="%d", value=None)
+        name = st.text_input("Product Name")
+        category = st.text_input("Category")
+        supplier = st.text_input("Supplier")
+        price = st.number_input("Unit Price", min_value=0.0, step=0.01)
+        reorder_level = st.number_input("Reorder Level", min_value=0, step=1)
+        quantity = st.number_input("Quantity in Stock", min_value=0, step=1)
+        submitted = st.form_submit_button("Submit")
+
+        if submitted:
+            insert_or_update_product(
+                product_id=product_id if product_id else None,
+                name=name,
+                category=category,
+                supplier=supplier,
+                price=price,
+                reorder_level=reorder_level,
+                quantity=quantity
+            )
+            st.success("Product inserted/updated successfully!")
+
+            # Optionally, show the updated product
+            if product_id:
+                df = get_product_by_id(product_id)
+                st.write("Updated Product:", df)
 
 # ---------- MAIN ----------
 if __name__ == "__main__":

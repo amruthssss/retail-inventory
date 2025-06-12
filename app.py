@@ -9,6 +9,8 @@ import os
 from db import get_sales_data, get_inventory_data, get_alert_data
 from product_images import product_images
 import PIL
+from admin_panel import admin_panel
+from auth import admin_login
 
 # --- Page Config ---
 st.set_page_config(page_title="Retail Dashboard", layout="wide")
@@ -83,7 +85,7 @@ with st.sidebar:
             category_filter = st.selectbox(
                 "",
                 category_options,
-                key="category_filter",  # This key ensures the value is stored in session_state
+                key="category_filter",
                 help="Filter inventory and sales by product category."
             )
             if category_filter != "All":
@@ -115,6 +117,11 @@ with st.sidebar:
             ]
         else:
             st.info("No sales data available to filter by date.")
+
+    # Admin Mode
+    if st.checkbox("🛠 Admin Mode"):
+        if admin_login():
+            admin_panel()
 
 # --- Floating Action Button (FAB) ---
 st.markdown("""
@@ -440,6 +447,43 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
+def get_product_by_id(prod_id):
+    query = """
+        SELECT p.product_id, p.product_name, p.category, p.supplier_name, p.unit_price, p.reorder_level, i.quantity_in_stock
+        FROM products p
+        JOIN inventory i ON p.product_id = i.product_id
+        WHERE p.product_id = :prod_id
+    """
+    with engine.begin() as conn:
+        result = conn.execute(text(query), {"prod_id": prod_id})
+        return pd.DataFrame(result.fetchall(), columns=result.keys())
+
+def admin_login():
+    if "admin_authenticated" not in st.session_state:
+        st.session_state["admin_authenticated"] = False
+
+    if not st.session_state["admin_authenticated"]:
+        with st.form("admin_login_form"):
+            username = st.text_input("Admin Username")
+            password = st.text_input("Admin Password", type="password")
+            submitted = st.form_submit_button("Login")
+        if submitted:
+            # Replace with your own secure check!
+            if username == "admin" and password == "yourpassword":
+                st.session_state["admin_authenticated"] = True
+                st.success("Logged in as admin.")
+            else:
+                st.error("Invalid credentials.")
+        return False
+    return True
+
+# --- Sidebar ---
+with st.sidebar:
+    # ... metrics, filters, etc. ...
+    if st.checkbox("🛠 Admin Mode"):
+        if admin_login():
+            admin_panel()
 
 
 
