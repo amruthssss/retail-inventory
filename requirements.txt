@@ -4,5 +4,6 @@ plotly
 sqlalchemy
 mysql-connector-python
 boto3
+pymysql
 streamlit-lottie
 streamlit-autorefresh
