@@ -1,8 +1,7 @@
 streamlit
-streamlit-lottie
-streamlit-autorefresh
+sqlalchemy
 pandas
 plotly
-pillow
-smtplib
-email
+mysql-connector-python
+streamlit-autorefresh
+streamlit-lottie
