@@ -67,32 +67,50 @@ def insert_sample_data() -> None:
     """Insert sample products, inventory, and sales data."""
     try:
         with engine.begin() as conn:
-            # Insert products
+            # Insert all products
             conn.execute(text(f"""
                 INSERT INTO {PRODUCTS_TABLE} (product_name, category, supplier_name, unit_price, reorder_level) VALUES
                 ('Wireless Mouse', 'Electronics', 'TechWare', 599.99, 20),
                 ('LED Bulb 9W', 'Lighting', 'BrightLite', 89.50, 50),
                 ('Notebook A5', 'Stationery', 'OfficeMart', 45.00, 100),
-                ('Desk Chair', 'Furniture', 'HomeComfort', 3499.00, 10);
+                ('Desk Chair', 'Furniture', 'HomeComfort', 3499.00, 10),
+                ('Bluetooth Speaker', 'Electronics', 'SoundMax', 1299.00, 15),
+                ('Table Lamp', 'Lighting', 'BrightLite', 499.00, 25),
+                ('Gel Pen', 'Stationery', 'OfficeMart', 15.00, 200),
+                ('Office Desk', 'Furniture', 'HomeComfort', 5999.00, 5),
+                ('USB-C Cable', 'Electronics', 'TechWare', 199.00, 40),
+                ('Sticky Notes', 'Stationery', 'OfficeMart', 25.00, 150),
+                ('Floor Lamp', 'Lighting', 'BrightLite', 1599.00, 8),
+                ('Bookshelf', 'Furniture', 'HomeComfort', 2499.00, 7)
             """))
 
         # Retrieve actual product_ids
         df = pd.read_sql("SELECT product_id, product_name FROM products", engine)
         product_map = {row['product_name']: row['product_id'] for _, row in df.iterrows()}
 
-        # Insert inventory and sales with mapped product_ids
+        # Insert inventory for all products
         with engine.begin() as conn:
             conn.execute(text(f"""
                 INSERT INTO {INVENTORY_TABLE} (product_id, quantity_in_stock) VALUES
-                (:mouse, 30), (:bulb, 120), (:notebook, 90), (:chair, 5);
+                (:mouse, 30), (:bulb, 120), (:notebook, 90), (:chair, 5),
+                (:speaker, 18), (:lamp, 40), (:pen, 300), (:desk, 8),
+                (:cable, 60), (:notes, 200), (:floorlamp, 10), (:bookshelf, 6)
             """), {
                 "mouse": product_map['Wireless Mouse'],
                 "bulb": product_map['LED Bulb 9W'],
                 "notebook": product_map['Notebook A5'],
-                "chair": product_map['Desk Chair']
+                "chair": product_map['Desk Chair'],
+                "speaker": product_map['Bluetooth Speaker'],
+                "lamp": product_map['Table Lamp'],
+                "pen": product_map['Gel Pen'],
+                "desk": product_map['Office Desk'],
+                "cable": product_map['USB-C Cable'],
+                "notes": product_map['Sticky Notes'],
+                "floorlamp": product_map['Floor Lamp'],
+                "bookshelf": product_map['Bookshelf']
             })
 
-            # Define sales data
+            # Define sales data (add more if you want sales for all products)
             sales_data = [
                 {"product_id": product_map['Wireless Mouse'], "quantity_sold": 3, "sale_date": '2025-06-01'},
                 {"product_id": product_map['Wireless Mouse'], "quantity_sold": 2, "sale_date": '2025-06-03'},
@@ -100,6 +118,7 @@ def insert_sample_data() -> None:
                 {"product_id": product_map['Notebook A5'], "quantity_sold": 25, "sale_date": '2025-06-01'},
                 {"product_id": product_map['Notebook A5'], "quantity_sold": 10, "sale_date": '2025-06-05'},
                 {"product_id": product_map['Desk Chair'], "quantity_sold": 6, "sale_date": '2025-06-04'},
+                # Add more sales records for other products as needed
             ]
             validate_sales_data(sales_data)
 
