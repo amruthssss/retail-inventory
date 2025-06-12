@@ -5,6 +5,9 @@ import boto3
 import os
 import logging
 from typing import List, Dict, Optional, Any
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # ---------- CONFIGURATION ----------
 DB_USER = 'root'
@@ -14,8 +17,11 @@ DB_HOST = '34.93.172.75'
 DB_PORT = 3306
 
 SES_REGION = 'us-east-1'
-EMAIL_SENDER = os.getenv("EMAIL_SENDER", "your_email@example.com")
-EMAIL_RECIPIENT = os.getenv("EMAIL_RECIPIENT", "target_email@example.com")
+EMAIL_SENDER = os.getenv("EMAIL_SENDER", "amruths604@gmail.com")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD", "vddywbeuafhopmrw")  # Use an App Password, not your main password!
+EMAIL_RECIPIENT = os.getenv("EMAIL_RECIPIENT", "amruthsharma49@example.com")
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
 
 PRODUCTS_TABLE = "products"
 INVENTORY_TABLE = "inventory"
@@ -143,8 +149,7 @@ def delete_product(product_id: int) -> None:
 
 # ---------- EMAIL ----------
 def send_email_alert(product_name: str, stock: int, threshold: int) -> None:
-    """Send a restock alert email using AWS SES."""
-    ses = boto3.client('ses', region_name=SES_REGION)
+    """Send a restock alert email using Gmail SMTP."""
     subject = f"Restock Alert: {product_name}"
     body = f"""
     Product: {product_name}
@@ -152,15 +157,18 @@ def send_email_alert(product_name: str, stock: int, threshold: int) -> None:
     Reorder Threshold: {threshold}
     Action Needed: Please reorder this product.
     """
+
+    msg = MIMEMultipart()
+    msg["From"] = EMAIL_SENDER
+    msg["To"] = EMAIL_RECIPIENT
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "plain"))
+
     try:
-        ses.send_email(
-            Source=EMAIL_SENDER,
-            Destination={"ToAddresses": [EMAIL_RECIPIENT]},
-            Message={
-                "Subject": {"Data": subject},
-                "Body": {"Text": {"Data": body}}
-            }
-        )
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_SENDER, EMAIL_RECIPIENT, msg.as_string())
         log(f"📧 Email sent for {product_name}")
     except Exception as e:
         log(f"⚠️ Email failed for {product_name}: {e}", "warning")

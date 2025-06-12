@@ -4,3 +4,5 @@ streamlit-autorefresh
 pandas
 plotly
 pillow
+smtplib
+email
