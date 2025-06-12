@@ -119,7 +119,7 @@ with st.sidebar:
             st.info("No sales data available to filter by date.")
 
     # Admin Mode
-    if st.checkbox("🛠 Admin Mode"):
+    if st.checkbox("🛠 Admin Mode", key="admin_mode"):
         if admin_login():
             admin_panel()
 
@@ -447,43 +447,3 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-
-def get_product_by_id(prod_id):
-    query = """
-        SELECT p.product_id, p.product_name, p.category, p.supplier_name, p.unit_price, p.reorder_level, i.quantity_in_stock
-        FROM products p
-        JOIN inventory i ON p.product_id = i.product_id
-        WHERE p.product_id = :prod_id
-    """
-    with engine.begin() as conn:
-        result = conn.execute(text(query), {"prod_id": prod_id})
-        return pd.DataFrame(result.fetchall(), columns=result.keys())
-
-def admin_login():
-    if "admin_authenticated" not in st.session_state:
-        st.session_state["admin_authenticated"] = False
-
-    if not st.session_state["admin_authenticated"]:
-        with st.form("admin_login_form"):
-            username = st.text_input("Admin Username")
-            password = st.text_input("Admin Password", type="password")
-            submitted = st.form_submit_button("Login")
-        if submitted:
-            # Replace with your own secure check!
-            if username == "admin" and password == "yourpassword":
-                st.session_state["admin_authenticated"] = True
-                st.success("Logged in as admin.")
-            else:
-                st.error("Invalid credentials.")
-        return False
-    return True
-
-# --- Sidebar ---
-with st.sidebar:
-    # ... metrics, filters, etc. ...
-    if st.checkbox("🛠 Admin Mode"):
-        if admin_login():
-            admin_panel()
-
-
-
