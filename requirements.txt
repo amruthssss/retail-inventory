@@ -1,0 +1,6 @@
+streamlit
+streamlit-lottie
+streamlit-autorefresh
+pandas
+plotly
+pillow
