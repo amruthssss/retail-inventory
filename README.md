@@ -1,104 +1,104 @@
-# 🛍️ Cloud-Based Retail Inventory & Sales Analytics Dashboard
+🛒 Retail Inventory & Auto-Restock System
+A real-time retail inventory monitoring and auto-restock dashboard built using Streamlit, MySQL, and Plotly, deployed on the cloud. It provides visual insights, low-stock alerts, auto-refreshing data, and auto-reordering capabilities to streamline inventory operations.
 
-A real-time inventory and sales analytics dashboard built with **Streamlit**, designed for retail businesses. It visualizes key performance indicators, manages inventory, predicts stockouts, and automatically triggers restock alerts with integrated image support.
+<!-- Add this if you have a demo screenshot -->
 
----
+🔧 Features
+✅ Real-time inventory and sales dashboards
+✅ Auto-refresh and Lottie animations for live monitoring
+✅ Low-stock alert panel
+✅ Auto-reorder logic for critical inventory levels
+✅ Admin panel with secure login
+✅ Visual analytics with Plotly
+✅ Export options and automated notifications (coming soon)
 
-## 📌 Features
+🚀 Live Demo
+🌍 Access the dashboard:
+👉 https://retail-inventory-project-2025.streamlit.app/
 
-- 📦 **Inventory Overview** with images, stock, and reorder levels
-- 📊 **Sales Analytics** using Plotly for visual insights
-- 🚨 **Restock Alerts** for low-stock items
-- 🔄 **Auto-Refresh** every 60 seconds for live updates
-- 📁 **Image Uploading & Validation** for product entries
-- 💌 **Email Notifications** for critical alerts (via AWS SES)
-- ☁️ **Cloud-integrated** (AWS RDS, S3, Lambda compatible)
-
----
-
-## 🚀 Demo
-
-![Inventory Screenshot](assets/screenshots/inventory_overview.png)
-
-Live URL (if deployed):  
-`https://your-username.streamlit.app/`
-
----
-
-## 🏗️ Tech Stack
-
-| Technology      | Purpose                         |
-|-----------------|----------------------------------|
-| Python          | Core programming language        |
-| Streamlit       | Web app framework                |
-| Pandas          | Data manipulation                |
-| Plotly          | Interactive visualizations       |
-| MySQL / AWS RDS | Database backend                 |
-| S3 (optional)   | Cloud image storage              |
-| SES (optional)  | Email alert system               |
-
----
-
-## 📁 Project Structure
-
-.
-├── app.py
-├── db.py
-├── utils.py
-├── assets/
-│ └── images/
-├── data/
-│ └── inventory.csv
-├── requirements.txt
-└── README.md
-
-yaml
+🗂️ Project Structure
+graphql
 Copy
 Edit
+retail-inventory-dashboard/
+│
+├── app.py                    # Main Streamlit app
+├── db.py                     # DB connection & data fetching logic
+├── auth.py                   # Admin login authentication
+├── admin_panel.py            # Admin management functions
+├── product_images.py         # Product image mapping
+│
+├── assets/                   # Product images and logos
+├── data/                     # Optional: sample CSV data for testing
+│
+├── requirements.txt          # Python dependencies
+├── README.md                 # Project documentation
+└── .gitignore                # Ignore sensitive and unnecessary files
+🛠️ Tech Stack
+Frontend/UI: Streamlit
 
----
+Database: MySQL (cloud-hosted via Google Cloud SQL)
 
-## 🔧 Setup Instructions
+Visualization: Plotly
 
-1. **Clone the repo**
-   ```bash
-   git clone https://github.com/your-username/retail-dashboard.git
-   cd retail-dashboard
-Install dependencies
+Hosting: Streamlit Cloud
+
+Languages: Python 3
+
+📊 Key Visuals
+📦 Inventory Levels with Conditional Coloring
+
+💰 Daily & Monthly Sales Line Charts
+
+🚨 Alerts for Low Stock Products
+
+🔐 Admin-only controls for product and inventory management
+
+⚙️ How to Run Locally
+Clone the repository:
+
+bash
+Copy
+Edit
+git clone https://github.com/yourusername/retail-inventory-dashboard.git
+cd retail-inventory-dashboard
+Install dependencies:
 
 bash
 Copy
 Edit
 pip install -r requirements.txt
-Run the app
+Configure your database:
+
+Set up your MySQL instance (locally or on Google Cloud SQL).
+
+Update db.py with your DB connection credentials.
+
+Run the app:
 
 bash
 Copy
 Edit
 streamlit run app.py
-🔄 Auto-Refresh Feature
-Enabled with streamlit_autorefresh:
 
-python
-Copy
-Edit
-from streamlit_autorefresh import st_autorefresh
-st_autorefresh(interval=60000, key="dashboard_refresh")
-📬 Email Alerts Setup (Optional)
-To enable stock alert emails:
+✅ Example Use Cases
+🏪 Small-to-medium retail shops tracking product inventory
 
-Configure AWS SES
+🛒 Auto-restocking system for ecommerce vendors
 
-Store your credentials securely
+📉 Visual alerts for declining stock trends
 
-Use boto3 to send notifications when stock < reorder threshold
+👨‍💻 Admin dashboard for product management
 
-📷 Inventory Images
-Place product images inside /assets/images/ and reference them in your inventory data as:
+📬 Upcoming Features
+📤 Export inventory/sales reports (CSV, PDF)
 
-python
-Copy
-Edit
-image_path = "assets/images/wireless_mouse.jpg"
-st.image(image_path, caption="Wireless Mouse")
+✉️ Email notifications via AWS SES or SMTP
+
+📱 Mobile optimization
+
+🔍 Advanced filters & search
+
+🤝 Contributing
+Pull requests are welcome! For major changes, please open an issue first to discuss.
 
